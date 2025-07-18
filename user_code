@@ -1,0 +1,33 @@
+import streamlit as st
+import requests
+
+st.set_page_config(page_title="Smart Summarizer", page_icon="📝", layout="centered")
+
+st.title("Smart Summarizer")
+st.markdown("Paste text below and click **Summarize** to get a quick summary.")
+
+text = st.text_area("Enter your article or text here:")
+
+min_length = st.slider("Minimum summary length:", 20, 100, 30)
+max_length = st.slider("Maximum summary length:", 50, 300, 150)
+
+if st.button("Summarize Now"):
+    if text.strip() == "":
+        st.error("Please enter some text first.")
+    else:
+        with st.spinner("Summarizing..."):
+            response = requests.post(
+                "http://127.0.0.1:8000/summarize", 
+                json={
+                    "text": text,
+                    "min_length": min_length,
+                    "max_length": max_length
+                }
+            )
+            if response.status_code == 200:
+                summary = response.json()["summary"]
+                st.success("Here’s the summary:")
+                st.write(summary)
+                st.text_area("Copy your summary here:", value=summary, height=200)
+            else:
+                st.error("Something went wrong. Please try again.")
